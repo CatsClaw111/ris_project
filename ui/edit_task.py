@@ -11,7 +11,7 @@ class EditTaskDialog(QDialog):
         self.task_id = task_id
         self.user_id = user_id
         self.setWindowTitle("Редактирование задачи")
-        self.setFixedSize(300, 200)
+        self.setFixedSize(300, 250)
 
         # Получаем данные задачи
         conn = sqlite3.connect("database/database.db")
@@ -32,6 +32,11 @@ class EditTaskDialog(QDialog):
         save_button = QPushButton("Сохранить", self)
         save_button.clicked.connect(self.save_task)
 
+        # Кнопка "Удалить"
+        delete_button = QPushButton("Удалить", self)
+        delete_button.clicked.connect(self.delete_task)
+
+
         # Компоновка
         self.layout.addWidget(QLabel("Название задачи:", self))
         self.layout.addWidget(self.title_input)
@@ -40,6 +45,7 @@ class EditTaskDialog(QDialog):
         self.layout.addWidget(QLabel("Приоритет задачи:", self))
         self.layout.addWidget(self.priority_input)
         self.layout.addWidget(save_button)
+        self.layout.addWidget(delete_button)
 
     def save_task(self):
         """Сохраняет изменения задачи."""
@@ -51,6 +57,18 @@ class EditTaskDialog(QDialog):
             WHERE id = ?
         """, (self.title_input.text(), self.description_input.text(),
               self.priority_input.value(), self.task_id))
+        conn.commit()
+        conn.close()
+        self.accept()
+
+    def delete_task(self):
+        """Удаляет задачу из базы данных."""
+        conn = sqlite3.connect("database/database.db")
+        cursor = conn.cursor()
+        cursor.execute("""
+            DELETE FROM tasks
+            WHERE id = ?
+        """, (self.task_id,))
         conn.commit()
         conn.close()
         self.accept()
